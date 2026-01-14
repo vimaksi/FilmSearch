@@ -17,13 +17,6 @@
             android:layout_marginRight="16dp"
             android:layout_gravity="center_vertical"
             android:textColor="@color/black"/>
-
-        <Button android:id="@+id/searchButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_vertical"
-            android:text="Поиск"/>
     </LinearLayout>
 
     <FrameLayout android:layout_width="match_parent"

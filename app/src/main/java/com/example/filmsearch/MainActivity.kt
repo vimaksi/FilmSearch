@@ -4,6 +4,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -12,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.Runnable
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -20,12 +23,14 @@ import retrofit2.converter.gson.GsonConverterFactory
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     private var isClickAllowed = true
 
     private val handler = Handler(Looper.getMainLooper())
     private val filmBaseUrl = " https://tv-api.com"
+    private val searchRunnable = Runnable { searchRequest() }
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(filmBaseUrl)
@@ -37,13 +42,12 @@ class MainActivity : AppCompatActivity() {
     private val films = ArrayList<Film>()//+
 
     private val adapter = FilmsAdapter {
-       if (clickDebounce()) {
+        if (clickDebounce()) {
             val intent = Intent(this, PosterActivity::class.java)
             intent.putExtra("poster", it.image)
             startActivity(intent)
         }
     }
-    private lateinit var searchButton: Button
     private lateinit var queryInput: EditText
     private lateinit var placeholder: TextView
     private lateinit var filmsList: RecyclerView
@@ -53,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         placeholder = findViewById(R.id.placeholderMessage)
-        searchButton = findViewById(R.id.searchButton)
         queryInput = findViewById(R.id.queryInput)
         filmsList = findViewById(R.id.films)
 
@@ -62,44 +65,18 @@ class MainActivity : AppCompatActivity() {
         filmsList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         filmsList.adapter = adapter
 
-        searchButton.setOnClickListener {
-            if (queryInput.text.isNotEmpty()) {
-                filmService.getFilms(queryInput.text.toString())
-                    .enqueue(object : retrofit2.Callback<FilmsResponse> {
-                        override fun onResponse(
-                            call: Call<FilmsResponse>,
-                            response: Response<FilmsResponse>
-                        ) {
-                            when (response.code()) {
-                                200 -> {
-                                    if (response.body()?.results?.isNotEmpty() == true) {
-                                        films.clear()
-                                        films.addAll(response.body()?.results!!)
-                                        adapter.notifyDataSetChanged()
-                                    }
-                                    if (films.isEmpty()) {
-                                        showMessage(getString(R.string.nothing_found), "")
-                                    } else {
-                                        showMessage("", "")
-                                    }
-                                }
-
-                                else -> {
-                                    showMessage(
-                                        getString(R.string.something_went_wrong),
-                                        response.code().toString()
-                                    )
-                                }
-                            }
-                        }
-
-                        override fun onFailure(call: Call<FilmsResponse>, t: Throwable) {
-                            showMessage("", t.message.toString())
-                        }
-                    })
-                }
+        queryInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
             }
-        }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                searchDebounce()
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+            }
+        })
+    }
 
     //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
 //            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -120,12 +97,56 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun clickDebounce() : Boolean {
+
+    private fun clickDebounce(): Boolean {
         val current = isClickAllowed
         if (isClickAllowed) {
             isClickAllowed = false
             handler.postDelayed({ isClickAllowed = true }, CLICK_DEBOUNCE_DELAY)
         }
         return current
+    }
+
+    private fun searchDebounce() {
+        handler.removeCallbacks(searchRunnable)
+        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+    }
+
+    private fun searchRequest() {
+        if (queryInput.text.isNotEmpty()) {
+            filmService.getFilms(queryInput.text.toString())
+                .enqueue(object : retrofit2.Callback<FilmsResponse> {
+                    override fun onResponse(
+                        call: Call<FilmsResponse>,
+                        response: Response<FilmsResponse>
+                    ) {
+                        when (response.code()) {
+                            200 -> {
+                                if (response.body()?.results?.isNotEmpty() == true) {
+                                    films.clear()
+                                    films.addAll(response.body()?.results!!)
+                                    adapter.notifyDataSetChanged()
+                                }
+                                if (films.isEmpty()) {
+                                    showMessage(getString(R.string.nothing_found), "")
+                                } else {
+                                    showMessage("", "")
+                                }
+                            }
+
+                            else -> {
+                                showMessage(
+                                    getString(R.string.something_went_wrong),
+                                    response.code().toString()
+                                )
+                            }
+                        }
+                    }
+
+                    override fun onFailure(call: Call<FilmsResponse>, t: Throwable) {
+                        showMessage("", t.message.toString())
+                    }
+                })
+        }
     }
 }
