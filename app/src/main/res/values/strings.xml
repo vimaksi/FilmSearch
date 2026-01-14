@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">FilmSearch</string>
+    <string name="something_went_wrong">что-то не так</string>
+    <string name="nothing_found">nothing_found</string>
+</resources>
