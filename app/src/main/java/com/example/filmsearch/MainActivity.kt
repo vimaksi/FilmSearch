@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -52,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var placeholder: TextView
     private lateinit var filmsList: RecyclerView
 
+    private lateinit var progressBar: ProgressBar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -59,6 +62,8 @@ class MainActivity : AppCompatActivity() {
         placeholder = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
         filmsList = findViewById(R.id.films)
+        progressBar = findViewById(R.id.progressBar)
+
 
         adapter.films = films
 
@@ -114,6 +119,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun searchRequest() {
         if (queryInput.text.isNotEmpty()) {
+            placeholder.visibility = View.GONE
+            filmsList.visibility = View.GONE
+            progressBar.visibility = View.VISIBLE
             filmService.getFilms(queryInput.text.toString())
                 .enqueue(object : retrofit2.Callback<FilmsResponse> {
                     override fun onResponse(
@@ -122,6 +130,9 @@ class MainActivity : AppCompatActivity() {
                     ) {
                         when (response.code()) {
                             200 -> {
+                                placeholder.visibility = View.VISIBLE
+                                filmsList.visibility = View.VISIBLE
+                                progressBar.visibility = View.GONE // Прячем ProgressBar после успешного выполнения запроса
                                 if (response.body()?.results?.isNotEmpty() == true) {
                                     films.clear()
                                     films.addAll(response.body()?.results!!)
@@ -144,6 +155,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     override fun onFailure(call: Call<FilmsResponse>, t: Throwable) {
+                        progressBar.visibility = View.GONE // Прячем ProgressBar после выполнения запроса с ошибкой
                         showMessage("", t.message.toString())
                     }
                 })
