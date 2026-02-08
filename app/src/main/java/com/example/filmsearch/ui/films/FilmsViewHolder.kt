@@ -1,16 +1,15 @@
-package com.example.filmsearch
+package com.example.filmsearch.ui.films
 
 import android.content.Context
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.view.ViewParent
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import org.w3c.dom.Text
+import com.example.filmsearch.R
+import com.example.filmsearch.domain.models.Film
 
 class FilmsViewHolder(parent: ViewGroup) :
     RecyclerView.ViewHolder(

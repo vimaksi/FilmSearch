@@ -1,4 +1,4 @@
-package com.example.filmsearch
+package com.example.filmsearch.ui.films
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,6 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -15,8 +14,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.Runnable
+import com.example.filmsearch.ui.poster.PosterActivity
+import com.example.filmsearch.R
+import com.example.filmsearch.data.dto.FilmsSearchResponse
+import com.example.filmsearch.data.network.FilmApi
+import com.example.filmsearch.domain.models.Film
 import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -123,10 +127,10 @@ class MainActivity : AppCompatActivity() {
             filmsList.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
             filmService.getFilms(queryInput.text.toString())
-                .enqueue(object : retrofit2.Callback<FilmsResponse> {
+                .enqueue(object : Callback<FilmsSearchResponse> {
                     override fun onResponse(
-                        call: Call<FilmsResponse>,
-                        response: Response<FilmsResponse>
+                        call: Call<FilmsSearchResponse>,
+                        response: Response<FilmsSearchResponse>
                     ) {
                         when (response.code()) {
                             200 -> {
@@ -154,7 +158,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                    override fun onFailure(call: Call<FilmsResponse>, t: Throwable) {
+                    override fun onFailure(call: Call<FilmsSearchResponse>, t: Throwable) {
                         progressBar.visibility = View.GONE // Прячем ProgressBar после выполнения запроса с ошибкой
                         showMessage("", t.message.toString())
                     }

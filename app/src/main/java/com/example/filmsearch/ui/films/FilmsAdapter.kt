@@ -1,12 +1,15 @@
-package com.example.filmsearch
+package com.example.filmsearch.ui.films
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.filmsearch.ui.films.FilmsViewHolder
+import com.example.filmsearch.domain.models.Film
 
 class FilmsAdapter(val clickListener: FilmClickListener): RecyclerView.Adapter<FilmsViewHolder>() {
     var films = ArrayList<Film>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmsViewHolder = FilmsViewHolder(parent)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmsViewHolder =
+        FilmsViewHolder(parent)
 
     override fun onBindViewHolder(
         holder: FilmsViewHolder,

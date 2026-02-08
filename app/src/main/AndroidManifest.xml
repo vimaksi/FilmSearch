@@ -12,10 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FilmSearch">
         <activity
-            android:name=".PosterActivity"
+            android:name=".ui.poster.PosterActivity"
             android:exported="false"/>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.films.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
