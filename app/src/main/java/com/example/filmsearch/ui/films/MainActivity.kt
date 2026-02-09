@@ -18,6 +18,8 @@ import com.example.filmsearch.ui.poster.PosterActivity
 import com.example.filmsearch.R
 import com.example.filmsearch.data.dto.FilmsSearchResponse
 import com.example.filmsearch.data.network.FilmApi
+import com.example.filmsearch.domain.Creator
+import com.example.filmsearch.domain.api.FilmsInteractor
 import com.example.filmsearch.domain.models.Film
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val filmBaseUrl = " https://tv-api.com"
     private val searchRunnable = Runnable { searchRequest() }
+
+    private val provideMoviesInteractor = Creator.provideMoviesInteractor()
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(filmBaseUrl)
@@ -127,41 +131,31 @@ class MainActivity : AppCompatActivity() {
             filmsList.visibility = View.GONE
             progressBar.visibility = View.VISIBLE
             filmService.getFilms(queryInput.text.toString())
-                .enqueue(object : Callback<FilmsSearchResponse> {
-                    override fun onResponse(
-                        call: Call<FilmsSearchResponse>,
-                        response: Response<FilmsSearchResponse>
-                    ) {
-                        when (response.code()) {
-                            200 -> {
-                                placeholder.visibility = View.VISIBLE
-                                filmsList.visibility = View.VISIBLE
-                                progressBar.visibility = View.GONE // Прячем ProgressBar после успешного выполнения запроса
-                                if (response.body()?.results?.isNotEmpty() == true) {
+            provideMoviesInteractor.searchMovies(
+                queryInput.text.toString(),
+                object : FilmsInteractor.MoviesConsumer {
+                    override fun consume(result: Result<List<Film>>) {
+                        runOnUiThread {
+                            result.onSuccess { movies ->
+                                if (movies.isNotEmpty()) {
+                                    placeholder.visibility = View.VISIBLE
+                                    filmsList.visibility = View.VISIBLE
+                                    progressBar.visibility =
+                                        View.GONE // Прячем ProgressBar после успешного выполнения запроса
                                     films.clear()
-                                    films.addAll(response.body()?.results!!)
+                                    films.addAll(movies)
                                     adapter.notifyDataSetChanged()
-                                }
-                                if (films.isEmpty()) {
-                                    showMessage(getString(R.string.nothing_found), "")
                                 } else {
-                                    showMessage("", "")
+                                    showMessage(getString(R.string.something_went_wrong), "")
                                 }
                             }
-
-                            else -> {
-                                showMessage(
-                                    getString(R.string.something_went_wrong),
-                                    response.code().toString()
-                                )
-                            }
+                                .onFailure { t ->
+                                    progressBar.visibility =
+                                        View.GONE // Прячем ProgressBar после выполнения запроса с ошибкой
+                                    showMessage("", t.message.toString())
+                                }
                         }
-                    }
-
-                    override fun onFailure(call: Call<FilmsSearchResponse>, t: Throwable) {
-                        progressBar.visibility = View.GONE // Прячем ProgressBar после выполнения запроса с ошибкой
-                        showMessage("", t.message.toString())
-                    }
+                    }m
                 })
         }
     }

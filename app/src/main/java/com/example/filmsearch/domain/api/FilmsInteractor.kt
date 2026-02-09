@@ -6,6 +6,6 @@ interface FilmsInteractor {
     fun searchMovies(expression: String, consumer: MoviesConsumer)
 
     interface MoviesConsumer {
-        fun consume(foundMovies: List<Film>)
+        fun consume(result: Result<List<Film>>)
     }
 }
