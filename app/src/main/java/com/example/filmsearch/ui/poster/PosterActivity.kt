@@ -7,8 +7,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.example.filmsearch.R
+import com.example.filmsearch.domain.Creator
 
 class PosterActivity : AppCompatActivity() {
+    private val posterController = Creator.providePosterController(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -18,14 +20,6 @@ class PosterActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-
-        val itemView = findViewById<ImageView>(R.id.image)
-        val image  = intent.getStringExtra("poster")
-
-        Glide.with(this)
-            .load(image)
-            .centerCrop()
-            .into(itemView)
+        posterController.onCreate()
     }
 }
