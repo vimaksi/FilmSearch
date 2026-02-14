@@ -1,15 +1,15 @@
-package com.example.filmsearch.domain
+package com.example.filmsearch.util
 
-import android.app.Activity
 import android.content.Context
 import com.example.filmsearch.data.MoviesRepositoryImpl
 import com.example.filmsearch.data.network.RetrofitNetworkClient
 import com.example.filmsearch.domain.api.FilmsInteractor
 import com.example.filmsearch.domain.api.FilmsRepository
 import com.example.filmsearch.domain.impl.FilmsInteractorImpl
-import com.example.filmsearch.presentation.MoviesSearchController
-import com.example.filmsearch.presentation.PosterController
-import com.example.filmsearch.ui.films.FilmsAdapter
+import com.example.filmsearch.presentation.films.MoviesSearchPresenter
+import com.example.filmsearch.presentation.PosterPresenter
+import com.example.filmsearch.presentation.films.FilmsView
+import com.example.filmsearch.presentation.poster.PosterView
 import com.example.filmsearch.ui.poster.PosterActivity
 
 object Creator {
@@ -19,10 +19,16 @@ object Creator {
     fun provideMoviesInteractor(context: Context): FilmsInteractor {
         return FilmsInteractorImpl(getMoviesRepository(context))
     }
-    fun provideMoviesSearchController(activity: Activity, adapter: FilmsAdapter): MoviesSearchController {
-        return MoviesSearchController(adapter,activity)
+    fun provideMoviesSearchPresenter(
+        moviesView: FilmsView,
+        context: Context
+    ): MoviesSearchPresenter {
+        return MoviesSearchPresenter(
+            view = moviesView,
+            context = context,
+        )
     }
-    fun providePosterController(activity: PosterActivity): PosterController{
-        return PosterController(activity)
+    fun providePosterController(view: PosterView,imageUrl: String): PosterPresenter {
+        return PosterPresenter(view, imageUrl)
     }
 }

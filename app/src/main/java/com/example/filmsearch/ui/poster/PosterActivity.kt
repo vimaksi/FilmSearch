@@ -7,19 +7,31 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.example.filmsearch.R
-import com.example.filmsearch.domain.Creator
+import com.example.filmsearch.presentation.PosterPresenter
+import com.example.filmsearch.presentation.poster.PosterView
+import com.example.filmsearch.util.Creator
 
-class PosterActivity : AppCompatActivity() {
-    private val posterController = Creator.providePosterController(this)
+class PosterActivity : AppCompatActivity(), PosterView {
+    private lateinit var posterPresenter: PosterPresenter
+    private lateinit var itemView: ImageView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        val imageUrl = intent.extras?.getString("poster", "") ?: ""
+        posterPresenter = Creator.providePosterController(this, imageUrl)
+        itemView = findViewById(R.id.image)
         setContentView(R.layout.film_card)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.card)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        posterController.onCreate()
+        posterPresenter.onCreate()
+    }
+
+    override fun showPoster(url: String) {
+        Glide.with(applicationContext)
+            .load(url)
+            .centerCrop()
+            .into(itemView)
     }
 }

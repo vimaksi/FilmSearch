@@ -4,21 +4,26 @@ import com.example.filmsearch.data.dto.FilmSearchRequest
 import com.example.filmsearch.data.dto.FilmsSearchResponse
 import com.example.filmsearch.domain.api.FilmsRepository
 import com.example.filmsearch.domain.models.Film
+import com.example.filmsearch.util.Resource
 
 class MoviesRepositoryImpl(private val networkClient: NetworkClient) : FilmsRepository {
 
-    override fun searchMovies(expression: String): Result<List<Film>> {
-        return try {
-            val response = networkClient.doRequest(FilmSearchRequest(expression))
-            if (response.resultCode == 200) {
-                return Result.success((response as FilmsSearchResponse).results.map {
+    override fun searchMovies(expression: String): Resource<List<Film>> {
+        val response = networkClient.doRequest(FilmSearchRequest(expression))
+        return when (response.resultCode) {
+            -1 -> {
+                Resource.Error("Проверьте подключение к интернету")
+            }
+
+            200 -> {
+                Resource.Success((response as FilmsSearchResponse).results.map {
                     Film(it.id, it.resultType, it.image, it.title, it.description)
                 })
-            } else {
-                Result.failure(IllegalArgumentException(""))
             }
-        } catch (e: Exception) {
-            Result.failure(e)
+
+            else -> {
+                Resource.Error("Ошибка сервера")
+            }
         }
     }
 }

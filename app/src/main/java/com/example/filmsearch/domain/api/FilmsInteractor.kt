@@ -1,11 +1,12 @@
 package com.example.filmsearch.domain.api
 
 import com.example.filmsearch.domain.models.Film
+import com.example.filmsearch.util.Resource
 
 interface FilmsInteractor {
-    fun searchMovies(expression: String, consumer: MoviesConsumer)
+    fun searchMovies(expression: String, consumer: FilmsConsumer)
 
-    interface MoviesConsumer {
-        fun consume(result: Result<List<Film>>)
+    interface FilmsConsumer {
+        fun consume(foundMovies: List<Film>?, errorMessage: String?)
     }
 }
