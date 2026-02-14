@@ -1,17 +1,13 @@
 package com.example.filmsearch.ui.films
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,12 +15,12 @@ import com.example.filmsearch.ui.poster.PosterActivity
 import com.example.filmsearch.R
 import com.example.filmsearch.domain.models.Film
 import com.example.filmsearch.presentation.films.FilmsView
+import com.example.filmsearch.ui.films.models.MoviesState
 import com.example.filmsearch.util.Creator
 
 class MainActivity : AppCompatActivity(), FilmsView {
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
-        private const val SEARCH_DEBOUNCE_DELAY = 2000L
     }
 
     private lateinit var queryInput: EditText
@@ -104,30 +100,56 @@ class MainActivity : AppCompatActivity(), FilmsView {
         return current
     }
 
-    override fun showPlaceholderMessage(isVisible: Boolean) {
-        placeholder.visibility = if (isVisible) View.VISIBLE else View.GONE
+
+    fun showLoading() {
+        filmsList.visibility = View.GONE
+        placeholder.visibility = View.GONE
+        progressBar.visibility = View.VISIBLE
     }
 
-    override fun showMoviesList(isVisible: Boolean) {
-        filmsList.visibility = if (isVisible) View.VISIBLE else View.GONE
+    fun showError(errorMessage: String) {
+        filmsList.visibility = View.GONE
+        placeholder.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
+
+        placeholder.text = errorMessage
     }
 
-    override fun showProgressBar(isVisible: Boolean) {
-        progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+    fun showEmpty(emptyMessage: String) {
+        showError(emptyMessage)
     }
 
-    override fun changePlaceholderText(newPlaceholderText: String) {
-        placeholder.text = newPlaceholderText
-    }
+    fun showContent(movies: List<Film>) {
+        filmsList.visibility = View.VISIBLE
+        placeholder.visibility = View.GONE
+        progressBar.visibility = View.GONE
 
-    override fun updateFilmsList(newFilmsList: List<Film>) {
         adapter.films.clear()
-        adapter.films.addAll(newFilmsList)
+        adapter.films.addAll(movies)
         adapter.notifyDataSetChanged()
+    }
+    override fun render(state: MoviesState) {
+        when (state) {
+            is MoviesState.Loading -> showLoading()
+            is MoviesState.Content -> showContent(state.movies)
+            is MoviesState.Error -> showError(state.errorMessage)
+            is MoviesState.Empty -> showEmpty(state.message)
+        }
+
+//        when {
+//            state.isLoading -> showLoading()
+//            state.errorMessage != null -> showError(state.errorMessage)
+//            else -> showContent(state.movies)
+//        }
+        when (state) {
+            is MoviesState.Loading -> showLoading()
+            is MoviesState.Content -> showContent(state.movies)
+            is MoviesState.Error -> showError(state.errorMessage)
+            is MoviesState.Empty -> showEmpty(state.message)
+        }
     }
 
     override fun showToast(additionalMessage: String) {
-        Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG)
-            .show()
+        TODO("Not yet implemented")
     }
 }

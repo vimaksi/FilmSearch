@@ -1,17 +1,11 @@
 package com.example.filmsearch.presentation.films
 
-import android.content.Context
-import com.example.filmsearch.domain.models.Film
+import com.example.filmsearch.ui.films.models.MoviesState
 
 interface FilmsView {
+    fun render(state: MoviesState)
 
-    fun showPlaceholderMessage(isVisible: Boolean)
+    // Методы одноразовых событий
 
-    fun showMoviesList(isVisible: Boolean)
-
-    fun showProgressBar(isVisible: Boolean)
-
-    fun changePlaceholderText(newPlaceholderText: String)
-    fun updateFilmsList(newFilmsList: List<Film>)
-    fun showToast(text: String)
+    fun showToast(additionalMessage: String)
 }
