@@ -20,11 +20,9 @@ object Creator {
         return FilmsInteractorImpl(getMoviesRepository(context))
     }
     fun provideMoviesSearchPresenter(
-        moviesView: FilmsView,
         context: Context
     ): MoviesSearchPresenter {
         return MoviesSearchPresenter(
-            view = moviesView,
             context = context,
         )
     }

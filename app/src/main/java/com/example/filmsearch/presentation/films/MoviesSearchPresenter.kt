@@ -11,7 +11,6 @@ import com.example.filmsearch.ui.films.models.MoviesState
 import com.example.filmsearch.util.Creator
 
 class MoviesSearchPresenter(
-    private val view: FilmsView,
     private val context: Context,
 ) {
     companion object {
@@ -20,18 +19,32 @@ class MoviesSearchPresenter(
     }
 
     private val handler = Handler(Looper.getMainLooper())
-
+    private var view: FilmsView? = null
     private val moviesInteractor = Creator.provideMoviesInteractor(context)
     private val films = ArrayList<Film>()
+    private var state: MoviesState? = null
+    private var latestSearchText: String? = null
     fun onCreate() {
         // adapter.films = films
     }
+    fun attachView(view: FilmsView) {
+        this.view = view
+        state?.let { view.render(it) }
+    }
 
+    fun detachView() {
+        this.view = null
+    }
     fun onDestroy() {
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
     }
 
     fun searchDebounce(changedText: String) {
+        if (latestSearchText == changedText) {
+            return
+        }
+
+        this.latestSearchText = changedText
         handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
 
         val searchRunnable = Runnable { searchRequest(changedText) }
@@ -43,12 +56,16 @@ class MoviesSearchPresenter(
             postTime,
         )
     }
-
+    private fun renderState(state: MoviesState) {
+        this.state = state
+        this.view?.render(state)
+    }
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            view.render(
-                MoviesState.Loading
-            )
+//            view?.render(
+//                MoviesState.Loading
+//            )
+            renderState(MoviesState.Loading)
 
             moviesInteractor.searchMovies(newSearchText, object : FilmsInteractor.FilmsConsumer {
                 override fun consume(foundMovies: List<Film>?, errorMessage: String?) {
@@ -60,24 +77,25 @@ class MoviesSearchPresenter(
 
                         when {
                             errorMessage != null -> {
-                                view.render(
+                                renderState(
                                     MoviesState.Error(
                                         errorMessage = context.getString(R.string.something_went_wrong),
                                     )
                                 )
-                                view.showToast(errorMessage)
+                                view?.showToast(errorMessage)
                             }
 
                             films.isEmpty() -> {
-                                view.render(
+                                renderState(
                                     MoviesState.Empty(
-                                        message = context.getString(R.string.nothing_found),
+                                        errorMessage = context.getString(R.string.nothing_found),
                                     )
                                 )
                             }
+                            }
 
                             else -> {
-                                view.render(
+                                renderState(
                                     MoviesState.Content(
                                         movies = films,
                                     )
