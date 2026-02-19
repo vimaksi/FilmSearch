@@ -22,8 +22,11 @@ import com.example.filmsearch.presentation.films.MoviesSearchPresenter
 import com.example.filmsearch.ui.films.models.MoviesState
 import com.example.filmsearch.util.Creator
 import com.example.filmsearch.util.MoviesApplication
+import moxy.MvpActivity
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 
-class MainActivity : AppCompatActivity(), FilmsView {
+class MainActivity: FilmsView, MvpActivity() {
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
@@ -36,7 +39,14 @@ class MainActivity : AppCompatActivity(), FilmsView {
     private val handler = Handler(Looper.getMainLooper())
 
     private var isClickAllowed = true
-
+    @InjectPresenter
+    lateinit var moviesSearchPresenter: MoviesSearchPresenter
+    @ProvidePresenter
+    fun providePresenter(): MoviesSearchPresenter {
+        return Creator.provideMoviesSearchPresenter(
+            context = this.applicationContext,
+        )
+    }
     private val adapter = FilmsAdapter {
         if (clickDebounce()) {
             val intent = Intent(this, PosterActivity::class.java)
@@ -44,20 +54,11 @@ class MainActivity : AppCompatActivity(), FilmsView {
             startActivity(intent)
         }
     }
-    private var moviesSearchPresenter: MoviesSearchPresenter? = null
+    //private var moviesSearchPresenter: MoviesSearchPresenter? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        moviesSearchPresenter = (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter
-
-        if (moviesSearchPresenter == null) {
-            moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
-                context = this.applicationContext,
-            )
-            (this.applicationContext as? MoviesApplication)?.moviesSearchPresenter = moviesSearchPresenter
-        }
-        moviesSearchPresenter?.attachView(this)
 
         placeholder = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
@@ -66,18 +67,6 @@ class MainActivity : AppCompatActivity(), FilmsView {
 
         filmsList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         filmsList.adapter = adapter
-
-//        queryInput.addTextChangedListener(object : TextWatcher {
-//            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-//            }
-//
-//            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-//                moviesSearchPresenter.searchDebounce()
-//            }
-//
-//            override fun afterTextChanged(p0: Editable?) {
-//            }
-//        })
 
         textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -94,44 +83,16 @@ class MainActivity : AppCompatActivity(), FilmsView {
         }
         textWatcher?.let { queryInput.addTextChangedListener(it) }
 
-        moviesSearchPresenter?.onCreate()
-
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        moviesSearchPresenter?.attachView(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        moviesSearchPresenter?.attachView(this)
-    }
-    override fun onPause() {
-        super.onPause()
-        moviesSearchPresenter?.detachView()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        moviesSearchPresenter?.detachView()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        moviesSearchPresenter?.detachView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         textWatcher?.let { queryInput.removeTextChangedListener(it) }
         moviesSearchPresenter?.onDestroy()
-        moviesSearchPresenter?.detachView()
-        if (isFinishing()) {
-            // Очищаем ссылку на Presenter в Application
-            (this.application as? MoviesApplication)?.moviesSearchPresenter = null
-        }
     }
 
     private fun clickDebounce(): Boolean {
@@ -173,18 +134,6 @@ class MainActivity : AppCompatActivity(), FilmsView {
         adapter.notifyDataSetChanged()
     }
     override fun render(state: MoviesState) {
-        when (state) {
-            is MoviesState.Loading -> showLoading()
-            is MoviesState.Content -> showContent(state.movies)
-            is MoviesState.Error -> showError(state.errorMessage)
-            is MoviesState.Empty -> showEmpty(state.message)
-        }
-
-//        when {
-//            state.isLoading -> showLoading()
-//            state.errorMessage != null -> showError(state.errorMessage)
-//            else -> showContent(state.movies)
-//        }
         when (state) {
             is MoviesState.Loading -> showLoading()
             is MoviesState.Content -> showContent(state.movies)
