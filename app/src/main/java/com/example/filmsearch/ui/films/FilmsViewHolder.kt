@@ -9,30 +9,37 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.filmsearch.R
+import com.example.filmsearch.databinding.ActivityMainBinding
+import com.example.filmsearch.databinding.FilmItemBinding
 import com.example.filmsearch.domain.models.Film
 
-class FilmsViewHolder(parent: ViewGroup) :
-    RecyclerView.ViewHolder(
-    LayoutInflater.from(parent.context)
-    .inflate(R.layout.film_item, parent, false)) {
-
-        val album: ImageView = itemView.findViewById(R.id.filmAlbum)
-        val title: TextView = itemView.findViewById(R.id.filmName)
-        val description: TextView = itemView.findViewById(R.id.filmDescription)
-        fun bind(model: Film) {
-            title.text = model.title
-            description.text = model.description
-
-            Glide.with(itemView)
+class FilmsViewHolder(private val binding: FilmItemBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+    fun bind(model: Film) {
+        binding.apply {
+            filmName.text = model.title
+            filmDescription.text = model.description
+        }
+        Glide.with(itemView)
             .load(model.image)
             .placeholder(R.drawable.ic_placeholder_45)
             .centerCrop()
-            .into(album)
+            .into(binding.filmAlbum)
+    }
+
+    companion object {
+        fun from(parent: ViewGroup): FilmsViewHolder {
+            val inflater = LayoutInflater.from(parent.context)
+            val binding = FilmItemBinding.inflate(inflater, parent, false)
+            return FilmsViewHolder(binding)
         }
+    }
+
     fun dpToPx(dp: Float, context: Context): Int {
         return TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
             dp,
-            context.resources.displayMetrics).toInt()
+            context.resources.displayMetrics
+        ).toInt()
     }
 }

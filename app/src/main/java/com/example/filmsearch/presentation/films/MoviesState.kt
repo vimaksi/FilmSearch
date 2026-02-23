@@ -1,4 +1,4 @@
-package com.example.filmsearch.ui.films.models
+package com.example.filmsearch.presentation.films
 
 import com.example.filmsearch.domain.models.Film
 

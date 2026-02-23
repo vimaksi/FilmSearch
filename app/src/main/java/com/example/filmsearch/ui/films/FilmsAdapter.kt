@@ -8,9 +8,7 @@ import com.example.filmsearch.domain.models.Film
 class FilmsAdapter(val clickListener: FilmClickListener): RecyclerView.Adapter<FilmsViewHolder>() {
     var films = ArrayList<Film>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmsViewHolder =
-        FilmsViewHolder(parent)
-
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilmsViewHolder = FilmsViewHolder.from(parent)
     override fun onBindViewHolder(
         holder: FilmsViewHolder,
         position: Int
