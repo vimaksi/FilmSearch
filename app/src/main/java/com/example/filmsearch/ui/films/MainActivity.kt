@@ -9,13 +9,13 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.filmsearch.ui.poster.PosterActivity
+import com.example.filmsearch.ui.poster.DetailsActivity
 import com.example.filmsearch.databinding.ActivityMainBinding
 import com.example.filmsearch.domain.models.Film
-import com.example.filmsearch.presentation.films.MoviesViewModel
 import com.example.filmsearch.presentation.films.MoviesState
+import com.example.filmsearch.presentation.films.MoviesViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,11 +23,11 @@ class MainActivity : AppCompatActivity() {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 
-    private var viewModel: MoviesViewModel? = null
+    private val viewModel:MoviesViewModel by viewModel()
 
     private val adapter = FilmsAdapter {
         if (clickDebounce()) {
-            val intent = Intent(this, PosterActivity::class.java)
+            val intent = Intent(this, DetailsActivity::class.java)
             intent.putExtra("poster", it.image)
             startActivity(intent)
         }
@@ -45,8 +45,6 @@ class MainActivity : AppCompatActivity() {
         binding.films.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.films.adapter = adapter
 
-        viewModel = ViewModelProvider(this, MoviesViewModel.getFactory())
-            .get(MoviesViewModel::class.java)
 
         viewModel?.observeState()?.observe(this) {
             render(it)
@@ -55,6 +53,14 @@ class MainActivity : AppCompatActivity() {
         viewModel?.observeShowToast()?.observe(this) {
             showToast(it)
         }
+//        private val adapter = FilmsAdapter {
+//            if (clickDebounce()) {
+//                val intent = Intent(this, DetailsActivity::class.java)
+//                intent.putExtra("poster", it.image)
+//                intent.putExtra("id", it.id)
+//                startActivity(intent)
+//            }
+//        }
 
         textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -112,10 +118,10 @@ class MainActivity : AppCompatActivity() {
         binding.apply {
             placeholderMessage.visibility = View.GONE
             progressBar.visibility = View.GONE
-
             adapter.films.clear()
             adapter.films.addAll(movies)
             adapter.notifyDataSetChanged()
+            films.visibility = View.VISIBLE
         }
     }
 

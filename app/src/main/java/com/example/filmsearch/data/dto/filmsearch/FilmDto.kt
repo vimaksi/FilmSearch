@@ -1,4 +1,4 @@
-package com.example.filmsearch.data.dto
+package com.example.filmsearch.data.dto.filmsearch
 
 class FilmDto(val id: String,
                 val resultType: String,
