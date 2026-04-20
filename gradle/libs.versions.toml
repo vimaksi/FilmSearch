@@ -14,6 +14,7 @@ retrofit = "2.9.0"
 glide = "4.14.2"
 moxyVersion = '2.2.2'
 fragmentKtx = "1.5.5"
+navigationCommonKtx = "2.9.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ moxy = { module = "com.github.moxy-community:moxy", version.ref = "moxyVersion" 
 moxy-android = { module = "com.github.moxy-community:moxy-android", version.ref = "moxyVersion" }
 moxy-community-moxy-compiler = { module = "com.github.moxy-community:moxy-compiler" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
 
 
 [plugins]

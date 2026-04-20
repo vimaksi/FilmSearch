@@ -12,4 +12,9 @@
     <string name="writer">Сценарист:</string>
     <string name="cast">В ролях:</string>
     <string name="plot">Сюжет:</string>
+    <string name="info_about">Версия 1.0</string>
+    <string name="info_dev">Разработчик VMAKSI</string>
+    <string name="movies">Movies</string>
+    <string name="persons">Persons</string>
+    <string name="info">Info</string>
 </resources>

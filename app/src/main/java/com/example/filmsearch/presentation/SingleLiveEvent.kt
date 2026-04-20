@@ -1,4 +1,4 @@
-package com.example.filmsearch.presentation.films
+package com.example.filmsearch.presentation
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData

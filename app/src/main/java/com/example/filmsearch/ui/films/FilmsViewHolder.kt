@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.filmsearch.R
-import com.example.filmsearch.databinding.ActivityMainBinding
 import com.example.filmsearch.databinding.FilmItemBinding
 import com.example.filmsearch.domain.models.Film
 

@@ -7,38 +7,35 @@ import android.os.SystemClock
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.filmsearch.R
+import androidx.lifecycle.viewModelScope
 import com.example.filmsearch.domain.api.FilmsInteractor
 import com.example.filmsearch.domain.models.Film
+import com.example.filmsearch.presentation.SingleLiveEvent
+import com.example.filmsearch.util.debounce
+import kotlinx.coroutines.launch
 
-class MoviesViewModel(private val moviesInteractor: FilmsInteractor): ViewModel() {
+
+class MoviesViewModel(private val moviesInteractor: FilmsInteractor) : ViewModel() {
     companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
-        private val SEARCH_REQUEST_TOKEN = Any()
     }
 
     private var latestSearchText: String? = null
-    private val handler = Handler(Looper.getMainLooper())
+
     private val stateLiveData = MutableLiveData<MoviesState>()
     fun observeState(): LiveData<MoviesState> = stateLiveData
     private val showToast = SingleLiveEvent<String?>()
-    fun observeShowToast(): LiveData<String?> = showToast
-    fun searchDebounce(changedText: String) {
-        if (latestSearchText == changedText) {
-            return
+    private val movieSearchDebounce =
+        debounce<String>(SEARCH_DEBOUNCE_DELAY, viewModelScope, true) { changedText ->
+            searchRequest(changedText)
         }
 
-        this.latestSearchText = changedText
-        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
-
-        val searchRunnable = Runnable { searchRequest(changedText) }
-
-        val postTime = SystemClock.uptimeMillis() + SEARCH_DEBOUNCE_DELAY
-        handler.postAtTime(
-            searchRunnable,
-            SEARCH_REQUEST_TOKEN,
-            postTime,
-        )
+    fun observeShowToast(): LiveData<String?> = showToast
+    fun searchDebounce(changedText: String) {
+        if (latestSearchText != changedText) {
+            latestSearchText = changedText
+            movieSearchDebounce(changedText)
+        }
     }
 
     private fun searchRequest(newSearchText: String) {
@@ -46,46 +43,10 @@ class MoviesViewModel(private val moviesInteractor: FilmsInteractor): ViewModel(
             renderState(
                 MoviesState.Loading
             )
-
-            moviesInteractor.searchMovies(newSearchText, object : FilmsInteractor.FilmsConsumer {
-                override fun consume(foundMovies: List<Film>?, errorMessage: String?) {
-                    handler.post {
-                        // Готовим список найденных фильмов для передачи в конструктор MoviesState
-                        val movies = mutableListOf<Film>()
-                        if (foundMovies != null) {
-                            movies.addAll(foundMovies)
-                        }
-
-                        when {
-                            errorMessage != null -> {
-                                renderState(
-                                    MoviesState.Error(
-                                        ""//errorMessage = context.getString(R.string.something_went_wrong),
-                                    )
-                                )
-                                showToast.postValue(errorMessage)
-                            }
-
-                            movies.isEmpty() -> {
-                                renderState(
-                                    MoviesState.Empty(
-                                       ""// message = context.getString(R.string.nothing_found),
-                                    )
-                                )
-                            }
-
-                            else -> {
-                                renderState(
-                                    MoviesState.Content(
-                                        movies = movies,
-                                    )
-                                )
-                            }
-                        }
-
-                    }
-                }
-            })
+            viewModelScope.launch {
+                moviesInteractor.searchMovies(newSearchText)
+                    .collect { pair -> processResult(pair.first, pair.second) }
+            }
         }
     }
 
@@ -93,8 +54,38 @@ class MoviesViewModel(private val moviesInteractor: FilmsInteractor): ViewModel(
         stateLiveData.postValue(state)
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
+    private fun processResult(foundMovies: List<Film>?, errorMessage: String?) {
+        // Готовим список найденных фильмов для передачи в конструктор MoviesState
+        val movies = mutableListOf<Film>()
+        if (foundMovies != null) {
+            movies.addAll(foundMovies)
+        }
+
+        when {
+            errorMessage != null -> {
+                renderState(
+                    MoviesState.Error(
+                        ""//errorMessage = context.getString(R.string.something_went_wrong),
+                    )
+                )
+                showToast.postValue(errorMessage)
+            }
+
+            movies.isEmpty() -> {
+                renderState(
+                    MoviesState.Empty(
+                        ""// message = context.getString(R.string.nothing_found),
+                    )
+                )
+            }
+
+            else -> {
+                renderState(
+                    MoviesState.Content(
+                        movies = movies,
+                    )
+                )
+            }
+        }
     }
 }

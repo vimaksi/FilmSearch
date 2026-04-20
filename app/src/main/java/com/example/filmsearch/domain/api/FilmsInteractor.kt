@@ -3,19 +3,11 @@ package com.example.filmsearch.domain.api
 import com.example.filmsearch.domain.models.Film
 import com.example.filmsearch.domain.models.MovieCast
 import com.example.filmsearch.domain.models.MovieDetails
+import kotlinx.coroutines.flow.Flow
 
 interface FilmsInteractor {
-    fun searchMovies(expression: String, consumer: FilmsConsumer)
+    fun searchMovies(expression: String): Flow<Pair<List<Film>?, String?>>
 
-    interface FilmsConsumer {
-        fun consume(foundMovies: List<Film>?, errorMessage: String?)
-    }
-    fun getMovieDetails(movieId: String, consumer: MovieDetailsConsumer)
-    interface MovieDetailsConsumer {
-        fun consume(foundMovieDetails: MovieDetails?, errorMessage: String?)
-    }
-    fun getCast(movieId: String,consumer: CastConsumer)
-    interface CastConsumer{
-        fun consume(foundCast: MovieCast?,errorMessage: String?)
-    }
+    fun getMovieDetails(movieId: String): Flow<Pair<MovieDetails?, String?>>
+    fun getCast(movieId: String): Flow<Pair<MovieCast?, String?>>
 }

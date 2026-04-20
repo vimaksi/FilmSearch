@@ -8,7 +8,7 @@ import com.example.filmsearch.presentation.cast.MoviesCastRVItem
 import com.example.filmsearch.ui.core.RVItem
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 
-// Делегат для заголовков на экране состава участников
+// Делегат для заголовков на экране состава участниковn
 fun movieCastHeaderDelegate() = adapterDelegateViewBinding<MoviesCastRVItem.HeaderItem, RVItem, ListItemHeaderBinding>(
     { layoutInflater, root -> ListItemHeaderBinding.inflate(layoutInflater, root, false) }
 ) {

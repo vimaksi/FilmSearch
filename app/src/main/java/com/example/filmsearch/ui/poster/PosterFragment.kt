@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.filmsearch.databinding.FragmentPosterBinding
@@ -27,7 +28,7 @@ class PosterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        posterViewModel.observeUrl().observe(viewLifecycleOwner){
+        posterViewModel.observeUrl().observe(viewLifecycleOwner) {
             showPoster(it)
         }
     }
@@ -38,9 +39,9 @@ class PosterFragment : Fragment() {
             .centerCrop()
             .into(binding.poster)
     }
+
     companion object {
         private const val POSTER_URL = "poster_url"
-
         fun newInstance(url: String) = PosterFragment().apply {
             arguments = Bundle().apply {
                 putString(POSTER_URL, url)
