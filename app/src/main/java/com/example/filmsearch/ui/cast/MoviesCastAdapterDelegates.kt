@@ -1,0 +1,37 @@
+package com.example.filmsearch.ui.cast
+
+import androidx.core.view.isVisible
+import com.bumptech.glide.Glide
+import com.example.filmsearch.databinding.ListItemCastBinding
+import com.example.filmsearch.databinding.ListItemHeaderBinding
+import com.example.filmsearch.presentation.cast.MoviesCastRVItem
+import com.example.filmsearch.ui.core.RVItem
+import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
+
+// Делегат для заголовков на экране состава участниковn
+fun movieCastHeaderDelegate() = adapterDelegateViewBinding<MoviesCastRVItem.HeaderItem, RVItem, ListItemHeaderBinding>(
+    { layoutInflater, root -> ListItemHeaderBinding.inflate(layoutInflater, root, false) }
+) {
+    bind {
+        binding.headerTextView.text = item.headerText
+    }
+}
+
+// Делегат для отображения участников на соответствующем экране
+fun movieCastPersonDelegate() = adapterDelegateViewBinding<MoviesCastRVItem.PersonItem, RVItem, ListItemCastBinding>(
+    { layoutInflater, root -> ListItemCastBinding.inflate(layoutInflater, root, false) }
+) {
+    bind {
+        if (item.data.image == null) {
+            binding.actorImageView.isVisible = false
+        } else {
+            Glide.with(itemView)
+                .load(item.data.image)
+                .into(binding.actorImageView)
+            binding.actorImageView.isVisible = true
+        }
+
+        binding.actorNameTextView.text = item.data.name
+        binding.actorDescriptionTextView.text = item.data.description
+    }
+}
