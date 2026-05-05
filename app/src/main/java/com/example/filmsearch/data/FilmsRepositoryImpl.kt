@@ -1,5 +1,7 @@
 package com.example.filmsearch.data
 
+import com.example.filmsearch.data.converters.MovieDbConvertor
+import com.example.filmsearch.data.db.AppDatabase
 import com.example.filmsearch.data.dto.cast.MovieCastRequest
 import com.example.filmsearch.data.dto.cast.CastResponse
 import com.example.filmsearch.data.dto.filmsearch.FilmSearchRequest
@@ -22,6 +24,8 @@ import kotlin.collections.List
 class FilmsRepositoryImpl(
     private val networkClient: NetworkClient,   // Добавили конвертер
     private val movieCastConverter: MovieCastConverter,
+    private val appDatabase: AppDatabase,
+    private val movieDbConvertor: MovieDbConvertor,
 ) : FilmsRepository {
 
     override fun searchMovies(expression: String): Flow<Resource<List<Film>>> = flow {
@@ -37,6 +41,7 @@ class FilmsRepositoryImpl(
                         response.results.map {
                             Film(it.id, it.resultType, it.image, it.title, it.description)
                         }
+                    saveMovie(data)
                     emit(Resource.Success(data))
                 }
             }
@@ -59,18 +64,18 @@ class FilmsRepositoryImpl(
             200 -> {
                 with(response as MovieDetailsResponse) {
                     val data =
-                            MovieDetails(
-                                id = id,
-                                title = title,
-                                imDbRating = imDbRating,
-                                year = year,
-                                countries = countries,
-                                genres = genres,
-                                directors = directors,
-                                writers = writers,
-                                stars = stars,
-                                plot = plot,
-                            )
+                        MovieDetails(
+                            id = id,
+                            title = title,
+                            imDbRating = imDbRating,
+                            year = year,
+                            countries = countries,
+                            genres = genres,
+                            directors = directors,
+                            writers = writers,
+                            stars = stars,
+                            plot = plot,
+                        )
                     emit(Resource.Success(data))
                 }
             }
@@ -81,6 +86,10 @@ class FilmsRepositoryImpl(
         }
     }
 
+    private suspend fun saveMovie(movies: List<Film>) {
+        val movieEntity = movies.map { movie -> movieDbConvertor.map(movie) }
+        appDatabase.movieDao().insertMovies(movieEntity)
+    }
 
     override fun getCast(movieId: String): Flow<Resource<MovieCast>> = flow {
         val response = networkClient.doRequest(MovieCastRequest(movieId))
@@ -98,5 +107,5 @@ class FilmsRepositoryImpl(
                 emit(Resource.Error("Ошибка сервера"))
             }
         }
-    }
-}
+    }}
+

@@ -15,6 +15,7 @@ glide = "4.14.2"
 moxyVersion = '2.2.2'
 fragmentKtx = "1.5.5"
 navigationCommonKtx = "2.9.7"
+room3Compiler = "3.0.0-alpha03"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,7 @@ moxy-android = { module = "com.github.moxy-community:moxy-android", version.ref 
 moxy-community-moxy-compiler = { module = "com.github.moxy-community:moxy-compiler" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-navigation-common-ktx = { group = "androidx.navigation", name = "navigation-common-ktx", version.ref = "navigationCommonKtx" }
+androidx-room3-compiler = { group = "androidx.room3", name = "room3-compiler", version.ref = "room3Compiler" }
 
 
 [plugins]

@@ -1,8 +1,10 @@
 package com.example.filmsearch.di
 
 import android.content.Context
+import androidx.room.Room
 import com.example.filmsearch.data.NetworkClient
 import com.example.filmsearch.data.SearchHistoryStorage
+import com.example.filmsearch.data.db.AppDatabase
 import com.example.filmsearch.data.local.SharedPreferencesSearchHistoryStorage
 import com.example.filmsearch.data.network.FilmApi
 import com.example.filmsearch.data.network.RetrofitNetworkClient
@@ -36,5 +38,8 @@ val dataModule = module {
     single<NetworkClient> {
         RetrofitNetworkClient(get(), androidContext())
     }
-
+    single {
+        Room.databaseBuilder(androidContext(), AppDatabase::class.java, "database.db")
+            .build()
+    }
 }
